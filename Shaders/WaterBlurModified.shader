@@ -15,17 +15,10 @@ Shader "Custom/WaterBlurGaussian" {
 
 
 CGPROGRAM
+#pragma debug
 #pragma vertex vert
 #pragma fragment frag 
-#ifndef SHADER_API_D3D11
 
-    #pragma target 3.0
-
-#else
-
-    #pragma target 4.0
-
-#endif
             sampler2D _GrabTexture : register(s0);
             float _blurSizeXY;
 
@@ -54,8 +47,8 @@ v2f vert(data i){
     v2f o;
 
     o.position = mul(UNITY_MATRIX_MVP, i.vertex);
-
-    o.screenPos = o.position;
+	o.screenPos.xy = (float2(o.position.x, o.position.y) + o.position.w) / 2;
+	o.screenPos.zw = o.position.zw;
     
 
     return o;
@@ -70,10 +63,6 @@ half4 frag( v2f i ) : COLOR
 
     float2 screenPos = i.screenPos.xy / i.screenPos.w;
 	float depth= _blurSizeXY*0.0005;
-
-    screenPos.x = (screenPos.x + 1) * 0.5;
-
-    screenPos.y = 1-(screenPos.y + 1) * 0.5;
 
 	//horizontal 
 	
@@ -136,13 +125,14 @@ struct v2f {
 
 v2f vert(data i){
 
-    v2f o;
+	v2f o;
 
-    o.position = mul(UNITY_MATRIX_MVP, i.vertex);
+	o.position = mul(UNITY_MATRIX_MVP, i.vertex);
+	o.screenPos.xy = (float2(o.position.x, o.position.y) + o.position.w) / 2;
+	o.screenPos.zw = o.position.zw;
 
-    o.screenPos = o.position;
 
-    return o;
+	return o;
 
 }
 
@@ -155,10 +145,6 @@ half4 frag( v2f i ) : COLOR
     float2 screenPos = i.screenPos.xy / i.screenPos.w;
 	float depth= _blurSizeXY*0.0005;
 
-    screenPos.x = (screenPos.x + 1) * 0.5;
-
-    screenPos.y = 1-(screenPos.y + 1) * 0.5;
-    
     half4 sum = half4(0.0h,0.0h,0.0h,0.0h);
   
     //vertical
